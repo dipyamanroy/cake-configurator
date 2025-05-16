@@ -27,7 +27,8 @@ body {
 
 .form-panel,
 .chat-panel {
-    overflow: hidden; /* hide overflow */
+    overflow: hidden;
+    /* hide overflow */
     display: flex;
     flex-direction: column;
 }
@@ -37,7 +38,8 @@ form,
 .chat-box {
     flex: 1;
     overflow-y: auto;
-    min-height: 0; /* required for flex children to shrink correctly */
+    min-height: 0;
+    /* required for flex children to shrink correctly */
 }
 
 .form-panel {
@@ -142,11 +144,13 @@ fieldset legend {
     padding: 4px 15px;
     border-radius: 8px;
     transition: all 0.2s;
-    gap: 5px; /* Adds space between checkbox and label */
+    gap: 5px;
+    /* Adds space between checkbox and label */
 }
 
 .checkbox-item input[type="checkbox"] {
-    transform: translateY(-10px); /* Adjust this value as needed */
+    transform: translateY(-10px);
+    /* Adjust this value as needed */
 }
 
 
@@ -172,7 +176,8 @@ input[type="checkbox"] {
     border-left: 1px solid #eee;
     position: relative;
     overflow: hidden;
-    height: 100vh; /* Ensure it takes full height */
+    height: 100vh;
+    /* Ensure it takes full height */
 }
 
 .chat-panel::before {
@@ -187,7 +192,7 @@ input[type="checkbox"] {
 
 .chat-panel h2 {
     margin-top: 0;
-    font-size: 1.7rem;
+    font-size: 1.3rem;
     color: #333;
     margin-bottom: 20px;
     position: relative;
@@ -204,26 +209,33 @@ input[type="checkbox"] {
     background: #d2691e;
 }
 
-/* Cake preview */
+/* Cake preview - Now horizontal layout */
 .cake-preview {
-    flex: 0 0 auto; /* No growing */
+    flex: 0 0 auto;
+    /* No growing */
     margin-bottom: 15px;
     padding: 15px;
-    max-height: 300px; /* Set maximum height */
+    max-height: 300px;
+    /* Set maximum height */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    /* Changed to row for horizontal layout */
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+    gap: 15px;
+    /* Space between image and specs */
 }
 
 .cake-image {
-    width: 100%;
-    height: 150px; /* Reduced height */
-    min-height: 150px; /* Ensure minimum height */
+    width: 30%;
+    /* Take up 30% of the preview width */
+    min-width: 100px;
+    height: auto;
+    aspect-ratio: 1/1;
+    /* Keep it square */
     background: #f2f2f2;
     border-radius: 10px;
-    margin-bottom: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -235,9 +247,12 @@ input[type="checkbox"] {
 }
 
 .cake-specs {
-    width: 100%;
-    max-height: 120px; /* Set maximum height */
-    overflow-y: auto; /* Make it scrollable */
+    width: 70%;
+    /* Take up 70% of the preview width */
+    max-height: 250px;
+    /* Increased maximum height */
+    overflow-y: auto;
+    /* Make it scrollable */
     padding: 15px;
     background: #fafafa;
     border-radius: 10px;
@@ -281,8 +296,10 @@ input[type="checkbox"] {
 /* Chat box */
 .chat-box {
     flex: 1;
-    height: calc(100% - 180px); /* Fixed height calculation */
-    min-height: 250px; /* Minimum height */
+    height: calc(100% - 180px);
+    /* Fixed height calculation */
+    min-height: 250px;
+    /* Minimum height */
     background: #fff;
     border-radius: 16px;
     padding: 20px;
@@ -404,30 +421,36 @@ button:focus {
     .container {
         flex-direction: column;
     }
+
     .form-panel,
     .chat-panel {
         padding: 20px;
         min-width: 100%;
     }
-    
+
+    /* Make cake preview vertical on mobile */
     .cake-preview {
-        max-height: 280px;
+        flex-direction: column;
+        max-height: none;
     }
-    
+
     .cake-image {
+        width: 100%;
         height: 120px;
         min-height: 120px;
+        margin-bottom: 10px;
     }
-    
+
     .cake-specs {
-        max-height: 100px;
+        width: 100%;
+        max-height: 150px;
     }
-    
+
     .chat-box {
         height: calc(100% - 150px);
         min-height: 200px;
     }
-    
+
     .checkbox-group {
         flex-direction: column;
         gap: 8px;
