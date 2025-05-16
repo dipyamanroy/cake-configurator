@@ -1,31 +1,25 @@
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 require("dotenv").config();
 
-//const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); // replaced bodyParser.json()
 
 function cleanGPTResponse(text) {
   return text
-    .replace(/^```json\s*/, "")
-    .replace(/^```\s*/, "")
-    .replace(/```$/, "")
+    .replace(/^```json\s*/, "")  // fix replace regex, remove opening triple backticks + optional "json"
+    .replace(/```$/, "")          // remove closing triple backticks
     .trim();
 }
 
 function generateReply(formData, currentState = {}) {
-  // Combine current state with new form data to get complete picture
   const completeData = { ...currentState, ...formData };
-
-  // Check missing fields
   const missingFields = [];
   const filledFields = [];
 
-  for (const key of ['cakeType', 'flavor', 'size', 'layers', 'filling', 'icing', 'decor', 'allergies']) {
+  for (const key of ['cakeType', 'flavor', 'size', 'layers', 'filling', 'icing', 'allergies']) {
     if (completeData[key] == null || completeData[key] === '') {
       missingFields.push(key);
     } else {
@@ -33,34 +27,36 @@ function generateReply(formData, currentState = {}) {
     }
   }
 
-  // Special handling for toppings array
   if (!Array.isArray(completeData.toppings) || completeData.toppings.length === 0) {
     missingFields.push('toppings');
   } else {
     filledFields.push('toppings');
   }
 
-  // Special handling for weddingStyle (only required for wedding cakes)
-  if (completeData.cakeType === 'wedding' &&
-    (completeData.weddingStyle == null || completeData.weddingStyle === '')) {
+  const layerCount = parseInt(completeData.layers, 10) || 0;
+  if (!Array.isArray(completeData.decor) || completeData.decor.length !== layerCount) {
+    missingFields.push('decor');
+  } else {
+    filledFields.push('decor');
+  }
+
+  if (completeData.cakeType === 'wedding' && (!completeData.weddingStyle || completeData.weddingStyle === '')) {
     missingFields.push('weddingStyle');
   } else if (completeData.cakeType === 'wedding') {
     filledFields.push('weddingStyle');
   }
 
-  // No fields provided in this interaction and none from previous state
   if (filledFields.length === 0) {
     return "Hi there! What kind of cake are you thinking about today? You can tell me the cake type, flavor, toppings, or anything you want.";
   }
 
-  // All fields are filled
+  // Fix: check if missingFields contains only 'weddingStyle' and cakeType !== 'wedding'
   if (missingFields.length === 0 ||
-    (missingFields.length === 1 && missingFields[0] === 'weddingStyle' && completeData.cakeType !== 'wedding')) {
+      (missingFields.length === 1 && missingFields[0] === 'weddingStyle' && completeData.cakeType !== 'wedding')) {
     return "Thanks! I've noted your complete cake order details.";
   }
 
-  // Some fields filled, some missing
-  const filledMessage = filledFields.length > 0
+  const filledMessage = filledFields.length > 0 
     ? `I've got your ${filledFields.join(", ")}. `
     : "";
 
@@ -78,20 +74,19 @@ app.post("/api/chat", async (req, res) => {
     filling: ['none', 'cream', 'jam', 'ganache'],
     icing: ['buttercream', 'fondant', 'chocolate glaze'],
     toppings: ['sprinkles', 'cherries', 'nuts', 'berries', 'chocolate chips'],
-    decor: ['simple', 'fancy', 'themed', 'floral'],
+    decor: ['none', 'rose', 'gold flake', 'honey'],
     weddingStyle: ['classic', 'romantic', 'modern'],
     allergies: ['none', 'nuts', 'gluten', 'dairy'],
   };
 
-  // Build system prompt with current state context
   let contextStr = "";
   if (currentState && Object.keys(currentState).length > 0) {
     contextStr = `
 Current cake order state:
 ${Object.entries(currentState)
-        .filter(([key, value]) => value !== null && value !== undefined && (Array.isArray(value) ? value.length > 0 : true))
-        .map(([key, value]) => `- ${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
-        .join("\n")}
+  .filter(([key, value]) => value !== null && value !== undefined && (Array.isArray(value) ? value.length > 0 : true))
+  .map(([key, value]) => `- ${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+  .join("\n")}
 
 Keep these values unless the user specifically changes them.
 `;
@@ -113,7 +108,7 @@ If the user provides order info, respond ONLY with a strict JSON object containi
 - filling: one of [${fields.filling.join(", ")}] or null
 - icing: one of [${fields.icing.join(", ")}] or null
 - toppings: array of any of [${fields.toppings.join(", ")}]
-- decor: one of [${fields.decor.join(", ")}] or null
+- decor: array of any of [${fields.decor.join(", ")}], with one value per cake layer (e.g. ["rose", "none", "gold flake"] for a 3-layer cake), or an empty array if not specified
 - weddingStyle: one of [${fields.weddingStyle.join(", ")}] or null (only if cakeType is wedding)
 - allergies: one of [${fields.allergies.join(", ")}] or null
 
@@ -123,20 +118,17 @@ NEVER include markdown or code fences when returning JSON.
 
 Examples:
 
-User: "What cake types do you have?"
-Bot: "Our available cake types are birthday, wedding, cupcake."
+User: "What decor options are available?"
+Bot: "We offer these decor options per layer: none, rose, gold flake, honey."
 
-User: "I'd like a chocolate cake."
-Bot: { "cakeType": null, "flavor": "chocolate", ... }
+User: "I want floral decor on the first layer and gold flakes on others for my 3-layer cake"
+Bot: { "decor": ["rose", "gold flake", "gold flake"], "layers": "3" }
 
 Be concise and clear.
 `.trim()
   };
 
-  const userMessage = {
-    role: "user",
-    content: prompt
-  };
+  const userMessage = { role: "user", content: prompt };
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -158,27 +150,23 @@ Be concise and clear.
     }
 
     const data = await response.json();
-
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Invalid response from OpenAI:", data);
-      return res.status(500).json({ error: "Invalid response from OpenAI" });
-    }
-
-    let content = data.choices[0].message.content;
+    let content = data.choices[0].message.content; // fixed this line
     console.log("Raw GPT response:", content);
 
     content = cleanGPTResponse(content);
 
-    // Try parse JSON - if fails, assume natural language response for options
     let parsed;
     try {
       parsed = JSON.parse(content);
+      if (parsed.decor && !Array.isArray(parsed.decor)) {
+        parsed.decor = [parsed.decor];
+      }
     } catch (parseError) {
       parsed = null;
     }
 
     if (parsed && typeof parsed === "object") {
-      // Use current state as default values, then apply the new parsed values
+      // Merge currentState first, then parsed overrides it
       const complete = {
         cakeType: null,
         flavor: null,
@@ -187,18 +175,26 @@ Be concise and clear.
         filling: null,
         icing: null,
         toppings: [],
-        decor: null,
+        decor: [],
         weddingStyle: null,
         allergies: null,
-        ...currentState, // Add current state as defaults
-        ...parsed        // Then apply new values from this interaction
+        ...currentState,
+        ...parsed
       };
 
-      const reply = generateReply(parsed, currentState);
+      const layerCount = parseInt(complete.layers, 10) || 0;
+      if (layerCount > 0) {
+        complete.decor = Array.from({ length: layerCount }, (_, i) =>
+          complete.decor[i] || 'none'
+        );
+      } else {
+        complete.decor = [];
+      }
 
+      // Pass the merged complete object to generateReply to get accurate missing fields
+      const reply = generateReply(complete, currentState);
       res.json({ data: complete, reply });
     } else {
-      // Natural language response (e.g. options list)
       res.json({ data: currentState || {}, reply: content });
     }
   } catch (err) {

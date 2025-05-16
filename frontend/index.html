@@ -17,7 +17,7 @@
             <h1>Cake Configurator</h1>
             <form id="cake-form">
                 <label>
-                    Type
+                    <strong>Type</strong>
                     <select id="cakeType">
                         <option value="">Select ↴</option>
                         <option value="birthday">Birthday</option>
@@ -26,8 +26,18 @@
                     </select>
                 </label>
 
+                <label id="weddingStyleWrapper" style="display: none;">
+                    <strong>Wedding Style</strong>
+                    <select id="weddingStyle">
+                        <option value="">Select ↴</option>
+                        <option value="classic">Classic</option>
+                        <option value="romantic">Romantic</option>
+                        <option value="modern">Modern</option>
+                    </select>
+                </label>
+
                 <label>
-                    Size
+                    <strong>Size</strong>
                     <select id="size">
                         <option value="">Select ↴</option>
                         <option value="small">Small</option>
@@ -38,7 +48,7 @@
                 </label>
 
                 <label>
-                    Layers
+                    <strong>Layers</strong>
                     <select id="layers">
                         <option value="">Select ↴</option>
                         <option value="1">1</option>
@@ -47,8 +57,14 @@
                     </select>
                 </label>
 
+                <div id="decorWrapper">
+                    <label><strong>Decor</strong></label>
+                    <div id="decorInputs"></div>
+                </div>
+
+
                 <label>
-                    Flavor
+                    <strong>Flavor</strong>
                     <select id="flavor">
                         <option value="">Select ↴</option>
                         <option value="vanilla">Vanilla</option>
@@ -60,7 +76,7 @@
                 </label>
 
                 <label>
-                    Filling
+                    <strong>Filling</strong>
                     <select id="filling">
                         <option value="">Select ↴</option>
                         <option value="none">None</option>
@@ -71,7 +87,7 @@
                 </label>
 
                 <label>
-                    Icing
+                    <strong>Icing</strong>
                     <select id="icing">
                         <option value="">Select ↴</option>
                         <option value="buttercream">Buttercream</option>
@@ -81,7 +97,7 @@
                 </label>
 
                 <fieldset>
-                    <legend>Toppings</legend>
+                    <legend><strong>Toppings</strong></legend>
                     <div class="checkbox-group">
                         <div class="checkbox-item">
                             <input type="checkbox" id="sprinkles" value="sprinkles" class="topping" />
@@ -106,18 +122,10 @@
                     </div>
                 </fieldset>
 
-                <label id="weddingStyleWrapper" style="display: none;">
-                    Wedding Style
-                    <select id="weddingStyle">
-                        <option value="">Select ↴</option>
-                        <option value="classic">Classic</option>
-                        <option value="romantic">Romantic</option>
-                        <option value="modern">Modern</option>
-                    </select>
-                </label>
+                
 
                 <label>
-                    Allergies
+                    <strong>Allergies</strong>
                     <select id="allergies">
                         <option value="">Select ↴</option>
                         <option value="none">None</option>
