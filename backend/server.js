@@ -34,7 +34,11 @@ function generateReply(formData, currentState = {}) {
   }
 
   const layerCount = parseInt(completeData.layers, 10) || 0;
-  if (!Array.isArray(completeData.decor) || completeData.decor.length !== layerCount) {
+  if (
+    !Array.isArray(completeData.decor) ||
+    completeData.decor.length !== layerCount ||
+    completeData.decor.every(item => item === 'none')
+  ) {
     missingFields.push('decor');
   } else {
     filledFields.push('decor');
