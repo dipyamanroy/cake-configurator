@@ -3,7 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+//const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const app = express();
 
 app.use(cors());

@@ -79,7 +79,7 @@ function updateForm() {
   const type = normalize(formFields.cakeType);
   const flavor = normalize(formFields.flavor);
 
-  let imageUrl = 'public/images/default.jpg'; 
+  let imageUrl = 'public/images/default.jpg';
 
   // Example mapping logic for cake images
   if (type === 'wedding') {
@@ -124,11 +124,11 @@ async function sendToChatbot() {
     const currentFormState = { ...formFields };
     // Also capture current UI state to ensure nothing is lost
     const uiFormState = getSelectedValues();
-    
-    const response = await fetch("/api/chat", {
+
+    const response = await fetch("https://t0md0m3g-3001.inc1.devtunnels.ms/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         prompt: input,
         currentState: currentFormState // Send current state to API
       }),
@@ -149,23 +149,22 @@ async function sendToChatbot() {
     formFields.filling = formData.filling ?? currentFormState.filling;
     formFields.icing = formData.icing ?? currentFormState.icing;
     formFields.weddingStyle = formData.weddingStyle ?? currentFormState.weddingStyle;
-    
+
     // Special handling for allergies - check for nut conflicts
     if (formData.allergies === 'nuts') {
       // If selecting nut allergy, filter out nut-related toppings
       formFields.allergies = 'nuts';
-      formFields.toppings = (currentFormState.toppings || []).filter(topping => 
+      formFields.toppings = (currentFormState.toppings || []).filter(topping =>
         !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(topping))
       );
     } else {
       formFields.allergies = formData.allergies ?? currentFormState.allergies;
     }
-    
-    // Special handling for toppings to avoid losing selections
+
     if (Array.isArray(formData.toppings)) {
       // If allergies is set to nuts, filter out nut toppings
       if (formFields.allergies === 'nuts') {
-        formFields.toppings = formData.toppings.filter(topping => 
+        formFields.toppings = formData.toppings.filter(topping =>
           !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(topping))
         );
       } else {
@@ -206,14 +205,51 @@ document.getElementById("cakeType").addEventListener("change", (e) => {
 document.getElementById("allergies").addEventListener("change", (e) => {
   const allergyValue = normalize(e.target.value);
   formFields.allergies = allergyValue;
-  
+
   // If nut allergy selected, remove nut toppings
   if (allergyValue === 'nuts') {
-    formFields.toppings = formFields.toppings.filter(topping => 
+    formFields.toppings = formFields.toppings.filter(topping =>
       !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(topping))
     );
   }
-  
+
+  updateForm();
+});
+
+// Add these listeners for the other form fields right after the above code
+document.getElementById("flavor").addEventListener("change", (e) => {
+  const value = normalize(e.target.value);
+  formFields.flavor = value;
+  updateForm();
+});
+
+document.getElementById("size").addEventListener("change", (e) => {
+  const value = normalize(e.target.value);
+  formFields.size = value;
+  updateForm();
+});
+
+document.getElementById("layers").addEventListener("change", (e) => {
+  const value = normalize(e.target.value);
+  formFields.layers = value;
+  updateForm();
+});
+
+document.getElementById("filling").addEventListener("change", (e) => {
+  const value = normalize(e.target.value);
+  formFields.filling = value;
+  updateForm();
+});
+
+document.getElementById("icing").addEventListener("change", (e) => {
+  const value = normalize(e.target.value);
+  formFields.icing = value;
+  updateForm();
+});
+
+document.getElementById("weddingStyle").addEventListener("change", (e) => {
+  const value = normalize(e.target.value);
+  formFields.weddingStyle = value;
   updateForm();
 });
 
@@ -221,11 +257,11 @@ document.getElementById("allergies").addEventListener("change", (e) => {
 document.querySelectorAll('.topping').forEach(checkbox => {
   checkbox.addEventListener('change', (e) => {
     const value = normalize(e.target.value);
-    
+
     if (e.target.checked) {
       // When adding a topping
-      if (formFields.allergies === 'nuts' && 
-          ['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(value)) {
+      if (formFields.allergies === 'nuts' &&
+        ['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(value)) {
         // Prevent adding nut toppings with nut allergy
         e.target.checked = false;
         alert("Cannot add nut toppings with a nut allergy selected.");
@@ -239,7 +275,7 @@ document.querySelectorAll('.topping').forEach(checkbox => {
       // When removing a topping
       formFields.toppings = formFields.toppings.filter(t => normalize(t) !== value);
     }
-    
+
     updateCurrentSelection();
     updatePriceTable();
   });
@@ -247,7 +283,7 @@ document.querySelectorAll('.topping').forEach(checkbox => {
 
 document.getElementById("chat-input").addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
-    e.preventDefault(); 
+    e.preventDefault();
     sendToChatbot();
   }
 });
@@ -412,14 +448,14 @@ function updatePriceTable() {
       </thead>
       <tbody>
         ${breakdown
-          .map(
-            (item) =>
-              `<tr>
+      .map(
+        (item) =>
+          `<tr>
                 <td style="padding:4px 8px;">${item.label}</td>
                 <td style="padding:4px 8px; text-align:right;">${formatPrice(item.price)}</td>
               </tr>`
-          )
-          .join("")}
+      )
+      .join("")}
       </tbody>
       <tfoot>
         <tr>
