@@ -120,10 +120,18 @@ async function sendToChatbot() {
   document.getElementById("chat-input").value = "";
 
   try {
-    const response = await fetch("api/chat", {
+    // Before sending to chatbot, capture the current form state
+    const currentFormState = { ...formFields };
+    // Also capture current UI state to ensure nothing is lost
+    const uiFormState = getSelectedValues();
+    
+    const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: input }),
+      body: JSON.stringify({ 
+        prompt: input,
+        currentState: currentFormState // Send current state to API
+      }),
     });
 
     const result = await response.json();
@@ -131,18 +139,51 @@ async function sendToChatbot() {
     const formData = result.data || {};
     const reply = result.reply || "Got it! Updated the form.";
 
-    Object.assign(formFields, {
-      cakeType: formData.cakeType ?? formFields.cakeType,
-      flavor: formData.flavor ?? formFields.flavor,
-      toppings: Array.isArray(formData.toppings) ? formData.toppings : formFields.toppings,
-      decor: formData.decor ?? formFields.decor,
-      size: formData.size ?? formFields.size,
-      layers: formData.layers ?? formFields.layers,
-      filling: formData.filling ?? formFields.filling,
-      icing: formData.icing ?? formFields.icing,
-      weddingStyle: formData.weddingStyle ?? formFields.weddingStyle,
-      allergies: formData.allergies ?? formFields.allergies,
+    // Merge the new data with existing form state
+    // Instead of reassigning, update property by property
+    formFields.cakeType = formData.cakeType ?? currentFormState.cakeType;
+    formFields.flavor = formData.flavor ?? currentFormState.flavor;
+    formFields.decor = formData.decor ?? currentFormState.decor;
+    formFields.size = formData.size ?? currentFormState.size;
+    formFields.layers = formData.layers ?? currentFormState.layers;
+    formFields.filling = formData.filling ?? currentFormState.filling;
+    formFields.icing = formData.icing ?? currentFormState.icing;
+    formFields.weddingStyle = formData.weddingStyle ?? currentFormState.weddingStyle;
+    
+    // Special handling for allergies - check for nut conflicts
+    if (formData.allergies === 'nuts') {
+      // If selecting nut allergy, filter out nut-related toppings
+      formFields.allergies = 'nuts';
+      formFields.toppings = (currentFormState.toppings || []).filter(topping => 
+        !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(topping))
+      );
+    } else {
+      formFields.allergies = formData.allergies ?? currentFormState.allergies;
+    }
+    
+    // Special handling for toppings to avoid losing selections
+    if (Array.isArray(formData.toppings)) {
+      // If allergies is set to nuts, filter out nut toppings
+      if (formFields.allergies === 'nuts') {
+        formFields.toppings = formData.toppings.filter(topping => 
+          !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(topping))
+        );
+      } else {
+        formFields.toppings = formData.toppings;
+      }
+    }
+
+    // Safety check: Use UI state as fallback for any nullified fields
+    Object.keys(formFields).forEach(key => {
+      if (formFields[key] === null && uiFormState[key] && uiFormState[key] !== '') {
+        formFields[key] = uiFormState[key];
+      }
     });
+
+    // Ensure toppings array is always valid
+    if (!Array.isArray(formFields.toppings)) {
+      formFields.toppings = [];
+    }
 
     updateForm();
 
@@ -159,6 +200,49 @@ document.getElementById("cakeType").addEventListener("change", (e) => {
   const value = normalize(e.target.value);
   formFields.cakeType = value;
   updateForm();
+});
+
+// Add allergy change handler to check for conflicts
+document.getElementById("allergies").addEventListener("change", (e) => {
+  const allergyValue = normalize(e.target.value);
+  formFields.allergies = allergyValue;
+  
+  // If nut allergy selected, remove nut toppings
+  if (allergyValue === 'nuts') {
+    formFields.toppings = formFields.toppings.filter(topping => 
+      !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(topping))
+    );
+  }
+  
+  updateForm();
+});
+
+// Add handler for topping checkboxes
+document.querySelectorAll('.topping').forEach(checkbox => {
+  checkbox.addEventListener('change', (e) => {
+    const value = normalize(e.target.value);
+    
+    if (e.target.checked) {
+      // When adding a topping
+      if (formFields.allergies === 'nuts' && 
+          ['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(value)) {
+        // Prevent adding nut toppings with nut allergy
+        e.target.checked = false;
+        alert("Cannot add nut toppings with a nut allergy selected.");
+      } else {
+        // Add to toppings if not already included
+        if (!formFields.toppings.map(normalize).includes(value)) {
+          formFields.toppings.push(value);
+        }
+      }
+    } else {
+      // When removing a topping
+      formFields.toppings = formFields.toppings.filter(t => normalize(t) !== value);
+    }
+    
+    updateCurrentSelection();
+    updatePriceTable();
+  });
 });
 
 document.getElementById("chat-input").addEventListener("keydown", function (e) {
@@ -347,6 +431,16 @@ function updatePriceTable() {
   `;
 }
 
+// Update formFields from UI on initialization to ensure consistency
+function syncFormFieldsWithUI() {
+  const uiState = getSelectedValues();
+  Object.keys(uiState).forEach(key => {
+    if (uiState[key] !== null && uiState[key] !== '') {
+      formFields[key] = uiState[key];
+    }
+  });
+}
+
 // Attach listeners to all inputs to update UI on change
 function attachListeners() {
   const inputs = document.querySelectorAll(
@@ -364,6 +458,7 @@ function attachListeners() {
 // Initialize on DOM ready
 window.addEventListener("DOMContentLoaded", () => {
   attachListeners();
+  syncFormFieldsWithUI(); // Sync form fields with UI state initially
   updateCurrentSelection();
   updatePriceTable();
 });

@@ -17,29 +17,58 @@ function cleanGPTResponse(text) {
     .trim();
 }
 
-function generateReply(formData) {
+function generateReply(formData, currentState = {}) {
+  // Combine current state with new form data to get complete picture
+  const completeData = { ...currentState, ...formData };
+
   // Check missing fields
   const missingFields = [];
-  for (const key of ['cakeType', 'flavor', 'toppings', 'decor', 'size', 'layers', 'filling', 'icing', 'weddingStyle', 'allergies']) {
-    if (formData[key] == null || (Array.isArray(formData[key]) && formData[key].length === 0)) {
+  const filledFields = [];
+
+  for (const key of ['cakeType', 'flavor', 'size', 'layers', 'filling', 'icing', 'decor', 'allergies']) {
+    if (completeData[key] == null || completeData[key] === '') {
       missingFields.push(key);
+    } else {
+      filledFields.push(key);
     }
   }
 
-  if (missingFields.length === 0) {
-    return "Thanks! I've noted your complete cake order details.";
+  // Special handling for toppings array
+  if (!Array.isArray(completeData.toppings) || completeData.toppings.length === 0) {
+    missingFields.push('toppings');
+  } else {
+    filledFields.push('toppings');
   }
 
-  // Customize message for greetings or unrelated inputs
-  if (!formData.cakeType && !formData.flavor && !formData.toppings.length && !formData.decor) {
+  // Special handling for weddingStyle (only required for wedding cakes)
+  if (completeData.cakeType === 'wedding' &&
+    (completeData.weddingStyle == null || completeData.weddingStyle === '')) {
+    missingFields.push('weddingStyle');
+  } else if (completeData.cakeType === 'wedding') {
+    filledFields.push('weddingStyle');
+  }
+
+  // No fields provided in this interaction and none from previous state
+  if (filledFields.length === 0) {
     return "Hi there! What kind of cake are you thinking about today? You can tell me the cake type, flavor, toppings, or anything you want.";
   }
 
-  return `Got it! Could you please tell me your preferred: ${missingFields.join(", ")}?`;
+  // All fields are filled
+  if (missingFields.length === 0 ||
+    (missingFields.length === 1 && missingFields[0] === 'weddingStyle' && completeData.cakeType !== 'wedding')) {
+    return "Thanks! I've noted your complete cake order details.";
+  }
+
+  // Some fields filled, some missing
+  const filledMessage = filledFields.length > 0
+    ? `I've got your ${filledFields.join(", ")}. `
+    : "";
+
+  return `${filledMessage}Could you please tell me your preferred ${missingFields.join(", ")}?`;
 }
 
 app.post("/api/chat", async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, currentState = {} } = req.body;
 
   const fields = {
     cakeType: ['birthday', 'wedding', 'cupcake'],
@@ -54,10 +83,26 @@ app.post("/api/chat", async (req, res) => {
     allergies: ['none', 'nuts', 'gluten', 'dairy'],
   };
 
+  // Build system prompt with current state context
+  let contextStr = "";
+  if (currentState && Object.keys(currentState).length > 0) {
+    contextStr = `
+Current cake order state:
+${Object.entries(currentState)
+        .filter(([key, value]) => value !== null && value !== undefined && (Array.isArray(value) ? value.length > 0 : true))
+        .map(([key, value]) => `- ${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+        .join("\n")}
+
+Keep these values unless the user specifically changes them.
+`;
+  }
+
   const systemMessage = {
     role: "system",
     content: `
 You are a helpful assistant that extracts structured cake order details from casual user input.
+
+${contextStr}
 
 If the user provides order info, respond ONLY with a strict JSON object containing the fields:
 
@@ -133,7 +178,7 @@ Be concise and clear.
     }
 
     if (parsed && typeof parsed === "object") {
-      // Merge with defaults to fill missing fields
+      // Use current state as default values, then apply the new parsed values
       const complete = {
         cakeType: null,
         flavor: null,
@@ -145,15 +190,16 @@ Be concise and clear.
         decor: null,
         weddingStyle: null,
         allergies: null,
-        ...parsed
+        ...currentState, // Add current state as defaults
+        ...parsed        // Then apply new values from this interaction
       };
 
-      const reply = generateReply(complete);
+      const reply = generateReply(parsed, currentState);
 
       res.json({ data: complete, reply });
     } else {
       // Natural language response (e.g. options list)
-      res.json({ data: {}, reply: content });
+      res.json({ data: currentState || {}, reply: content });
     }
   } catch (err) {
     console.error("OpenAI API error:", err);
