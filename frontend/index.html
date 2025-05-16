@@ -1,91 +1,135 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <link rel="stylesheet" href="style.css" />
 
-        <meta charset="UTF-8" />
-        <title>Cake Configurator</title>
-        <style>
-            body {
-                font-family: Arial;
-                padding: 20px;
-            }
-            select,
-            input[type="checkbox"] {
-                margin: 5px;
-            }
-            .chat-box {
-                border: 1px solid #ccc;
-                padding: 10px;
-                max-width: 500px;
-                height: 200px;
-                overflow-y: auto;
-            }
-            .chat-entry {
-                margin-bottom: 5px;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>🍰 Cake Configurator</h1>
+<head>
+    <meta charset="UTF-8" />
+    <title>Cake Configurator</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
 
-        <form id="cake-form">
-            <label
-                >Type:
-                <select id="cakeType">
-                    <option value="">--Select--</option>
-                    <option value="birthday">Birthday</option>
-                    <option value="wedding">Wedding</option>
-                    <option value="cupcake">Cupcake</option>
-                </select> </label
-            ><br />
+<body>
+    <div class="container">
+        <div class="form-panel">
+            <h1>Cake Configurator</h1>
+            <form id="cake-form">
+                <label>
+                    Type:
+                    <select id="cakeType">
+                        <option value="">--Select--</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="cupcake">Cupcake</option>
+                    </select>
+                </label>
 
-            <label
-                >Flavor:
-                <select id="flavor">
-                    <option value="">--Select--</option>
-                    <option value="vanilla">Vanilla</option>
-                    <option value="chocolate">Chocolate</option>
-                    <option value="strawberry">Strawberry</option>
-                </select> </label
-            ><br />
+                <label>
+                    Size:
+                    <select id="size">
+                        <option value="">--Select--</option>
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                        <option value="tiered">Tiered</option>
+                    </select>
+                </label>
 
-            <fieldset>
-                <legend>Toppings</legend>
-                <label
-                    ><input type="checkbox" value="sprinkles" class="topping" />
-                    Sprinkles</label
-                >
-                <label
-                    ><input type="checkbox" value="cherries" class="topping" />
-                    Cherries</label
-                >
-                <label
-                    ><input type="checkbox" value="nuts" class="topping" />
-                    Nuts</label
-                >
-            </fieldset>
+                <label>
+                    Layers:
+                    <select id="layers">
+                        <option value="">--Select--</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </label>
 
-            <label
-                >Decoration:
-                <select id="decor">
-                    <option value="">--Select--</option>
-                    <option value="simple">Simple</option>
-                    <option value="fancy">Fancy</option>
-                    <option value="themed">Themed</option>
-                </select> </label
-            ><br />
-        </form>
+                <label>
+                    Flavor:
+                    <select id="flavor">
+                        <option value="">--Select--</option>
+                        <option value="vanilla">Vanilla</option>
+                        <option value="chocolate">Chocolate</option>
+                        <option value="strawberry">Strawberry</option>
+                        <option value="red velvet">Red Velvet</option>
+                        <option value="lemon">Lemon</option>
+                    </select>
+                </label>
 
-        <h2>💬 Chat with the Cake Bot</h2>
-        <div class="chat-box" id="chat-box"></div>
-        <input
-            type="text"
-            id="chat-input"
-            placeholder="Describe your cake..."
-        />
-        <button onclick="sendToChatbot()">Send</button>
+                <label>
+                    Filling:
+                    <select id="filling">
+                        <option value="">--Select--</option>
+                        <option value="none">None</option>
+                        <option value="cream">Cream</option>
+                        <option value="jam">Jam</option>
+                        <option value="ganache">Ganache</option>
+                    </select>
+                </label>
 
-        <script src="script.js"></script>
-    </body>
+                <label>
+                    Icing:
+                    <select id="icing">
+                        <option value="">--Select--</option>
+                        <option value="buttercream">Buttercream</option>
+                        <option value="fondant">Fondant</option>
+                        <option value="chocolate glaze">Chocolate Glaze</option>
+                    </select>
+                </label>
+
+                <fieldset>
+                    <legend>Toppings</legend>
+                    <label><input type="checkbox" value="sprinkles" class="topping" />Sprinkles</label>
+                    <label><input type="checkbox" value="cherries" class="topping" />Cherries</label>
+                    <label><input type="checkbox" value="nuts" class="topping" />Nuts</label>
+                    <label><input type="checkbox" value="berries" class="topping" />Berries</label>
+                    <label><input type="checkbox" value="chocolate chips" class="topping" />Chocolate Chips</label>
+                </fieldset>
+
+                <label>
+                    Decoration:
+                    <select id="decor">
+                        <option value="">--Select--</option>
+                        <option value="simple">Simple</option>
+                        <option value="fancy">Fancy</option>
+                        <option value="themed">Themed</option>
+                        <option value="floral">Floral</option>
+                    </select>
+                </label>
+
+                <label id="weddingStyleWrapper" style="display: none;">
+                    Wedding Style:
+                    <select id="weddingStyle">
+                        <option value="">--Select--</option>
+                        <option value="classic">Classic</option>
+                        <option value="romantic">Romantic</option>
+                        <option value="modern">Modern</option>
+                    </select>
+                </label>
+
+                <label>
+                    Allergies:
+                    <select id="allergies">
+                        <option value="">--Select--</option>
+                        <option value="none">None</option>
+                        <option value="nuts">Nuts</option>
+                        <option value="gluten">Gluten</option>
+                        <option value="dairy">Dairy</option>
+                    </select>
+                </label>
+            </form>
+        </div>
+
+        <div class="chat-panel">
+            <h2>Chat</h2>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-controls">
+                <input type="text" id="chat-input" placeholder="Describe your cake..." />
+                <button onclick="sendToChatbot()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
 </html>
