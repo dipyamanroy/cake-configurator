@@ -133,8 +133,9 @@ async function sendToChatbot() {
   addChatMessage("You", input);
   document.getElementById("chat-input").value = "";
 
-  const currentFormState = { ...formFields };
-  const uiFormState = getSelectedValues();
+  // Get current selection + price info
+  const currentSelection = getSelectedValues();
+  const { total, breakdown } = calculatePrice(currentSelection);
 
   try {
     const response = await fetch("https://t0md0m3g-3001.inc1.devtunnels.ms/api/chat", {
@@ -142,7 +143,8 @@ async function sendToChatbot() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt: input,
-        currentState: currentFormState
+        currentState: { ...formFields, price: total },
+        priceBreakdown: breakdown,
       }),
     });
 
@@ -151,11 +153,11 @@ async function sendToChatbot() {
     const reply = result.reply || "Got it! Updated the form.";
 
     Object.keys(formFields).forEach(key => {
-      formFields[key] = formData[key] ?? currentFormState[key];
+      formFields[key] = formData[key] ?? formFields[key];
     });
 
     if (formData.allergies === 'nuts') {
-      formFields.toppings = currentFormState.toppings.filter(t =>
+      formFields.toppings = formFields.toppings.filter(t =>
         !['nuts', 'almonds', 'walnuts', 'pecans', 'peanuts'].includes(normalize(t))
       );
     }
@@ -171,8 +173,8 @@ async function sendToChatbot() {
     }
 
     Object.keys(formFields).forEach(key => {
-      if (formFields[key] == null && uiFormState[key]) {
-        formFields[key] = uiFormState[key];
+      if (formFields[key] == null && currentSelection[key]) {
+        formFields[key] = currentSelection[key];
       }
     });
 

@@ -5,12 +5,12 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors());
-app.use(express.json()); // replaced bodyParser.json()
+app.use(express.json());
 
 function cleanGPTResponse(text) {
   return text
-    .replace(/^```json\s*/, "")  // fix replace regex, remove opening triple backticks + optional "json"
-    .replace(/```$/, "")          // remove closing triple backticks
+    .replace(/^```json\s*/, "")
+    .replace(/```$/, "")
     .trim();
 }
 
