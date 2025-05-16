@@ -14,8 +14,15 @@ const formFields = {
 function addChatMessage(sender, text) {
   const box = document.getElementById("chat-box");
   const div = document.createElement("div");
-  div.className = "chat-entry";
-  div.textContent = `${sender}: ${text}`;
+  div.classList.add("chat-entry");
+
+  if (sender.toLowerCase() === "you") {
+    div.classList.add("user-message");
+  } else {
+    div.classList.add("bot-message");
+  }
+
+  div.textContent = text;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
@@ -28,6 +35,7 @@ function normalize(value) {
 function updateForm() {
   console.log("Updating form with:", formFields);
   handleConditionalFields();
+
   // Dropdowns
   const dropdowns = [
     "cakeType", "flavor", "decor", "size", "layers",
@@ -39,19 +47,6 @@ function updateForm() {
       el.value = normalize(formFields[key]) || "";
     }
   });
-
-  function handleConditionalFields() {
-  const cakeType = document.getElementById('cakeType').value.toLowerCase();
-  const weddingStyleWrapper = document.getElementById('weddingStyleWrapper');
-
-  if (cakeType === 'wedding') {
-    weddingStyleWrapper.style.display = 'block';
-  } else {
-    weddingStyleWrapper.style.display = 'none';
-    // Clear weddingStyle selection if cakeType not wedding
-    document.getElementById('weddingStyle').value = '';
-  }
-}
 
   // Toppings (checkboxes)
   const normalizedToppings = (formFields.toppings || []).map(normalize);
@@ -66,6 +61,39 @@ function updateForm() {
   } else {
     weddingStyleWrapper.style.display = "none";
     formFields.weddingStyle = null;
+  }
+
+  // Update cake image preview
+  const imageEl = document.querySelector('.cake-image');
+  const type = normalize(formFields.cakeType);
+  const flavor = normalize(formFields.flavor);
+
+  let imageUrl = 'public/images/default.jpg'; 
+
+  // Example mapping logic
+  if (type === 'wedding') {
+    imageUrl = 'public/images/wedding.jpg';
+  } else if (type === 'birthday') {
+    imageUrl = 'public/images/birthday.jpg';
+  } else if (flavor === 'chocolate') {
+    imageUrl = 'public/images/chocolate.jpg';
+  } else if (flavor === 'vanilla') {
+    imageUrl = 'public/images/vanilla.jpg';
+  }
+
+  imageEl.style.backgroundImage = `url('${imageUrl}')`;
+
+}
+
+function handleConditionalFields() {
+  const cakeType = document.getElementById('cakeType').value.toLowerCase();
+  const weddingStyleWrapper = document.getElementById('weddingStyleWrapper');
+
+  if (cakeType === 'wedding') {
+    weddingStyleWrapper.style.display = 'block';
+  } else {
+    weddingStyleWrapper.style.display = 'none';
+    document.getElementById('weddingStyle').value = '';
   }
 }
 
@@ -117,4 +145,11 @@ document.getElementById("cakeType").addEventListener("change", (e) => {
   const value = normalize(e.target.value);
   formFields.cakeType = value;
   updateForm();
+});
+
+document.getElementById("chat-input").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault(); 
+    sendToChatbot();
+  }
 });

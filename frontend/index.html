@@ -3,8 +3,12 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cake Configurator</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -78,23 +82,29 @@
 
                 <fieldset>
                     <legend>Toppings</legend>
-                    <label><input type="checkbox" value="sprinkles" class="topping" />Sprinkles</label>
-                    <label><input type="checkbox" value="cherries" class="topping" />Cherries</label>
-                    <label><input type="checkbox" value="nuts" class="topping" />Nuts</label>
-                    <label><input type="checkbox" value="berries" class="topping" />Berries</label>
-                    <label><input type="checkbox" value="chocolate chips" class="topping" />Chocolate Chips</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sprinkles" value="sprinkles" class="topping" />
+                            <label for="sprinkles">Sprinkles</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cherries" value="cherries" class="topping" />
+                            <label for="cherries">Cherries</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="nuts" value="nuts" class="topping" />
+                            <label for="nuts">Nuts</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="berries" value="berries" class="topping" />
+                            <label for="berries">Berries</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="chocolate-chips" value="chocolate chips" class="topping" />
+                            <label for="chocolate-chips">Chocolate Chips</label>
+                        </div>
+                    </div>
                 </fieldset>
-
-                <label>
-                    Decoration:
-                    <select id="decor">
-                        <option value="">--Select--</option>
-                        <option value="simple">Simple</option>
-                        <option value="fancy">Fancy</option>
-                        <option value="themed">Themed</option>
-                        <option value="floral">Floral</option>
-                    </select>
-                </label>
 
                 <label id="weddingStyleWrapper" style="display: none;">
                     Wedding Style:
@@ -120,15 +130,26 @@
         </div>
 
         <div class="chat-panel">
-            <h2>Chat</h2>
-            <div class="chat-box" id="chat-box"></div>
+            <h2>Your Cake Creation</h2>
+
+            <div class="cake-preview">
+                <div class="cake-image"></div>
+                
+            </div>
+
+            <h2>Chat Assistance</h2>
+            <div class="chat-box" id="chat-box">
+                <div class="chat-entry bot-message">Welcome to our cake configurator! How can I help you create your perfect cake today?</div>
+            </div>
+
             <div class="chat-controls">
-                <input type="text" id="chat-input" placeholder="Describe your cake..." />
+                <input type="text" id="chat-input" placeholder="Describe your cake or ask a question..." />
                 <button onclick="sendToChatbot()">Send</button>
             </div>
         </div>
     </div>
 
+    <!-- Link to external JS file -->
     <script src="script.js"></script>
 </body>
 

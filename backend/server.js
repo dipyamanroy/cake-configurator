@@ -56,22 +56,36 @@ app.post("/api/chat", async (req, res) => {
 
   const systemMessage = {
     role: "system",
-    content: `You are a helpful assistant that extracts structured cake order details from casual user input. 
-Return only a **strict JSON object** without any text or explanation. Only use values from these options:
+    content: `
+You are a helpful assistant that extracts structured cake order details from casual user input.
 
-- cakeType: ${fields.cakeType.join(', ')} or null
-- flavor: ${fields.flavor.join(', ')} or null
-- size: ${fields.size.join(', ')} or null
-- layers: ${fields.layers.join(', ')} or null
-- filling: ${fields.filling.join(', ')} or null
-- icing: ${fields.icing.join(', ')} or null
-- toppings: array of any of [${fields.toppings.join(', ')}]
-- decor: ${fields.decor.join(', ')} or null
-- weddingStyle: ${fields.weddingStyle.join(', ')} or null (only if cakeType is wedding)
-- allergies: ${fields.allergies.join(', ')} or null
+If the user provides order info, respond ONLY with a strict JSON object containing the fields:
 
-All values must be lowercase. If any field is not mentioned, return null or an empty array.
-NEVER include markdown or code fences.`
+- cakeType: one of [${fields.cakeType.join(", ")}] or null
+- flavor: one of [${fields.flavor.join(", ")}] or null
+- size: one of [${fields.size.join(", ")}] or null
+- layers: one of [${fields.layers.join(", ")}] or null
+- filling: one of [${fields.filling.join(", ")}] or null
+- icing: one of [${fields.icing.join(", ")}] or null
+- toppings: array of any of [${fields.toppings.join(", ")}]
+- decor: one of [${fields.decor.join(", ")}] or null
+- weddingStyle: one of [${fields.weddingStyle.join(", ")}] or null (only if cakeType is wedding)
+- allergies: one of [${fields.allergies.join(", ")}] or null
+
+If the user is asking about available options, respond with a friendly natural language answer listing those options.
+
+NEVER include markdown or code fences when returning JSON.
+
+Examples:
+
+User: "What cake types do you have?"
+Bot: "Our available cake types are birthday, wedding, cupcake."
+
+User: "I'd like a chocolate cake."
+Bot: { "cakeType": null, "flavor": "chocolate", ... }
+
+Be concise and clear.
+`.trim()
   };
 
   const userMessage = {
@@ -110,31 +124,37 @@ NEVER include markdown or code fences.`
 
     content = cleanGPTResponse(content);
 
+    // Try parse JSON - if fails, assume natural language response for options
     let parsed;
     try {
       parsed = JSON.parse(content);
     } catch (parseError) {
-      console.error("Failed to parse GPT response JSON:", parseError);
-      parsed = {};
+      parsed = null;
     }
 
-    const complete = {
-      cakeType: null,
-      flavor: null,
-      size: null,
-      layers: null,
-      filling: null,
-      icing: null,
-      toppings: [],
-      decor: null,
-      weddingStyle: null,
-      allergies: null,
-      ...parsed
-    };
+    if (parsed && typeof parsed === "object") {
+      // Merge with defaults to fill missing fields
+      const complete = {
+        cakeType: null,
+        flavor: null,
+        size: null,
+        layers: null,
+        filling: null,
+        icing: null,
+        toppings: [],
+        decor: null,
+        weddingStyle: null,
+        allergies: null,
+        ...parsed
+      };
 
-    const reply = generateReply(complete);
+      const reply = generateReply(complete);
 
-    res.json({ data: complete, reply });
+      res.json({ data: complete, reply });
+    } else {
+      // Natural language response (e.g. options list)
+      res.json({ data: {}, reply: content });
+    }
   } catch (err) {
     console.error("OpenAI API error:", err);
     res.status(500).send("Error calling OpenAI");
