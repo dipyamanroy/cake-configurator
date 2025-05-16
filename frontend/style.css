@@ -88,6 +88,33 @@ form {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
 }
 
+form::-webkit-scrollbar,
+.cake-specs::-webkit-scrollbar,
+.chat-box::-webkit-scrollbar {
+    width: 4px;
+}
+
+form::-webkit-scrollbar-track,
+.cake-specs::-webkit-scrollbar-track,
+.chat-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+form::-webkit-scrollbar-thumb,
+.cake-specs::-webkit-scrollbar-thumb,
+.chat-box::-webkit-scrollbar-thumb {
+    background: #dcdcdc;
+    border-radius: 4px;
+}
+
+form::-webkit-scrollbar-thumb:hover,
+.cake-specs::-webkit-scrollbar-thumb:hover,
+.chat-box::-webkit-scrollbar-thumb:hover {
+    background: #c25a14;
+}
+
+
 label {
     display: block;
     margin-bottom: 24px;
@@ -396,7 +423,7 @@ button:focus {
 /* Add scrollbar styling for better appearance */
 .cake-specs::-webkit-scrollbar,
 .chat-box::-webkit-scrollbar {
-    width: 8px;
+    width: 4px;
 }
 
 .cake-specs::-webkit-scrollbar-track,
@@ -407,7 +434,7 @@ button:focus {
 
 .cake-specs::-webkit-scrollbar-thumb,
 .chat-box::-webkit-scrollbar-thumb {
-    background: #d2691e;
+    background: #dcdcdc;
     border-radius: 4px;
 }
 
